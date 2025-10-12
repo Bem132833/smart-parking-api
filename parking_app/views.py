@@ -1,59 +1,25 @@
-from rest_framework import serializers
-from rest_framework import generics, status
-from rest_framework.response import Response
-from django.db import transaction
-from django.utils import timezone
+from rest_framework import viewsets, permissions
 from .models import ParkingSpot, Reservation, Payment
 from .serializers import ParkingSpotSerializer, ReservationSerializer, PaymentSerializer
 
-
-class ParkingSpotListCreateView(generics.ListCreateAPIView):
+class ParkingSpotViewSet(viewsets.ModelViewSet):
     queryset = ParkingSpot.objects.all()
     serializer_class = ParkingSpotSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-class ParkingSpotDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = ParkingSpot.objects.all()
-    serializer_class = ParkingSpotSerializer
-
-
-class ReservationListCreateView(generics.ListCreateAPIView):
-    queryset = Reservation.objects.select_related('spot','user').all()
-    serializer_class = ReservationSerializer
-
-    def perform_create(self, serializer):
-        
-        user = self.request.user
-        starts = serializer.validated_data['start_time']
-        ends = serializer.validated_data['end_time']
-        spot = serializer.validated_data['spot']
-
-        
-        with transaction.atomic():
-            overlapping = Reservation.objects.select_for_update().filter(
-                spot=spot,
-                status='active',
-                start_time__lt=ends,
-                end_time__gt=starts
-            )
-            if overlapping.exists():
-                raise serializers.ValidationError("This spot is already reserved for the requested time range.")
-            
-            duration_hours = (ends - starts).total_seconds() / 3600.0
-            total_price = round(duration_hours * float(spot.price_per_hour), 2)
-            serializer.save(user=user, total_price=total_price, status='active')
-
-class ReservationDetailView(generics.RetrieveUpdateDestroyAPIView):
+class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
-class PaymentListCreateView(generics.ListCreateAPIView):
-    queryset = Payment.objects.select_related('reservation').all()
-    serializer_class = PaymentSerializer
-
-class PaymentDetailView(generics.RetrieveUpdateDestroyAPIView):
+class PaymentViewSet(viewsets.ModelViewSet):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
 
 
 # Create your views here.
