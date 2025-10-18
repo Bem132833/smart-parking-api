@@ -41,6 +41,19 @@ class Reservation(models.Model):
 
     def __str__(self):
         return f"Reservation {self.id} by {self.user.username} for {self.spot}"
+    
+    def clean(self):
+        overlapping = Reservation.objects.filter(
+            spot=self.spot,
+            end_time__gt=self.start_time,
+            start_time__lt=self.end_time
+        ).exclude(id=self.id)
+        if overlapping.exists():
+            raise ValidationError("This spot is already booked for that time range.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
 class Payment(models.Model):
     reservation = models.OneToOneField(Reservation, on_delete=models.CASCADE, related_name='payment')
