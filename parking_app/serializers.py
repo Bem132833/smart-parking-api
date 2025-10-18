@@ -6,7 +6,7 @@ User = get_user_model()
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
-
+     
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'password')
@@ -21,10 +21,19 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class ParkingSpotSerializer(serializers.ModelSerializer):
+    is_available = serializers.SerializerMethodField()
+
     class Meta:
         model = ParkingSpot
-        fields = ['id', 'location', 'status', 'price_per_hour']
+        # Include actual model fields only + computed fields
+        fields = ['id','name','location','number', 'level', 'is_available']
 
+    def get_is_available(self, obj):
+        """
+        Compute whether the parking spot is available.
+        Example: a spot is unavailable if it has an active reservation.
+        """
+        return not getattr(obj, 'reserved', False)
 
 class ReservationSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
