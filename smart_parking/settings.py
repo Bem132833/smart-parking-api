@@ -23,9 +23,9 @@ SECRET_KEY = 'django-insecure-o^e*u^q41)h=b2#tz8fsqe30$y9j%u=5k@8m09x!@k5b0jcm_$
 
 # SECURITY WARNING: don't run with debug turned on in production!
 import os
-DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'https://smart-parking-api-oxuw.onrender.com').split(',')
 
 
 # Application definition
