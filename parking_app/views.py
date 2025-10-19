@@ -1,9 +1,8 @@
-from rest_framework import viewsets, permissions, status, filters
+from rest_framework import viewsets, permissions, status, filters, serializers
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.core.exceptions import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
 from django.db import transaction
 from django.utils import timezone
 from .models import ParkingSpot, Reservation, Payment
@@ -14,7 +13,7 @@ class ParkingSpotViewSet(viewsets.ModelViewSet):
     serializer_class = ParkingSpotSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['is_available']
+    filterset_fields = ['name', 'location', 'status']
     search_fields = ['location']
 
 
@@ -128,7 +127,6 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [AllowAny]  
     serializer_class = RegisterSerializer
-
 
 
 # Create your views here.
