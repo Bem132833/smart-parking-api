@@ -25,18 +25,25 @@ class ReservationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        # ✅ Fix: prevent error when Swagger (AnonymousUser) accesses this
+        if not user.is_authenticated:
+            return Reservation.objects.none()
+
         if user.is_staff:
             return super().get_queryset()
         return super().get_queryset().filter(user=user)
 
     def perform_create(self, serializer):
         user = self.request.user
+        # ✅ Fix: block anonymous reservations
+        if not user.is_authenticated:
+            raise serializers.ValidationError("You must be logged in to create a reservation.")
+
         start = serializer.validated_data['start_time']
         end = serializer.validated_data['end_time']
         spot = serializer.validated_data['spot']
 
         with transaction.atomic():
-           
             overlapping = Reservation.objects.select_for_update().filter(
                 spot=spot,
                 status='active',
@@ -48,16 +55,13 @@ class ReservationViewSet(viewsets.ModelViewSet):
                     "Slot already reserved for requested time window."
                 )
 
-
             duration_seconds = (end - start).total_seconds()
             duration_hours = duration_seconds / 3600.0
             total_price = round(duration_hours * float(spot.price_per_hour), 2)
 
-         
             spot.status = 'Reserved'
             spot.save(update_fields=['status'])
 
-        
             serializer.save(user=user, total_price=total_price, status='active')
 
     @action(detail=True, methods=['post'])
