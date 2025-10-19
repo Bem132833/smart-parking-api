@@ -63,3 +63,4 @@ class PaymentSerializer(serializers.ModelSerializer):
         fields = ['id', 'reservation', 'reservation_detail', 'amount', 'payment_method', 'status', 'created_at']
         read_only_fields = ['id', 'created_at']
 
+
