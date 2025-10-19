@@ -30,7 +30,7 @@ schema_view = get_schema_view(
       description="API documentation for the Smart Parking System",
    ),
    public=True,
-   permission_classes=(permissions.AllowAny,),
+   permission_classes=(permissions.AllowAny,),  # Swagger public
 )
 
 # Simple home page
@@ -40,7 +40,7 @@ def home(request):
 # URL patterns
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('parking_app.urls')), 
+    path('api/', include('parking_app.urls')),  # your app routes
     path('', home, name='home'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
