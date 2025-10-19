@@ -25,19 +25,28 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+# Swagger schema setup
 schema_view = get_schema_view(
-   openapi.Info(title="Smart Parking API", default_version='v1'),
-   public=True, permission_classes=(permissions.AllowAny,),
+   openapi.Info(
+      title="Smart Parking API",
+      default_version='v1',
+      description="API documentation for the Smart Parking System",
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
 )
+
+# Simple home page
 def home(request):
     return HttpResponse("Welcome to Smart Parking API")
 
+# URL patterns
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path ('api/', include('parking_app.urls')),
-    path('', home),
+    path('api/', include('parking_app.urls')), 
+    path('', home, name='home'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-
 ]
+
